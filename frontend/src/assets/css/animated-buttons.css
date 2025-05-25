@@ -1,0 +1,119 @@
+.animated-button {
+    background: linear-gradient(-30deg, #603a0d 50%, #53350e 50%);
+    padding: 8px 16px;
+    margin: 4px;
+    display: inline-block;
+    transform: translate(0%, 0%);
+    overflow: hidden;
+    color: #d4e0f7;
+    font-size: 10px;
+    letter-spacing: 1px;
+    text-align: center;
+    text-transform: uppercase;
+    text-decoration: none;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+    position: relative; /* Já estava aqui */
+    top: 20px; /* Adiciona deslocamento para baixo */
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+}
+
+
+
+.animated-button::before {
+    content: '';
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    width: 100%;
+    height: 100%;
+    background-color: #8592ad;
+    opacity: 0;
+    transition: .2s opacity ease-in-out;
+}
+
+.animated-button:hover::before {
+    opacity: 0.2;
+}
+
+.animated-button span {
+    position: absolute;
+}
+
+.animated-button span:nth-child(1) {
+    top: 0px;
+    left: 0px;
+    width: 100%;
+    height: 2px;
+    background: linear-gradient(to left, rgba(8, 20, 43, 0), #2662d9);
+    animation: 2s animateTop linear infinite;
+}
+.animated-button:hover{
+    background: #321e04; /* Mudança de cor no hover */
+    transform: scale(1.1); /* Aumenta o botão 10% ao passar o mouse */
+}
+
+@keyframes animateTop {
+    0% {
+        transform: translateX(100%);
+    }
+    100% {
+        transform: translateX(-100%);
+    }
+}
+
+.animated-button span:nth-child(2) {
+    top: 0px;
+    right: 0px;
+    height: 100%;
+    width: 2px;
+    background: linear-gradient(to top, rgba(8, 20, 43, 0), #2662d9);
+    animation: 2s animateRight linear -1s infinite;
+}
+
+@keyframes animateRight {
+    0% {
+        transform: translateY(100%);
+    }
+    100% {
+        transform: translateY(-100%);
+    }
+}
+
+.animated-button span:nth-child(3) {
+    bottom: 0px;
+    left: 0px;
+    width: 100%;
+    height: 2px;
+    background: linear-gradient(to right, rgba(8, 20, 43, 0), #2662d9);
+    animation: 2s animateBottom linear infinite;
+}
+
+@keyframes animateBottom {
+    0% {
+        transform: translateX(-100%);
+    }
+    100% {
+        transform: translateX(100%);
+    }
+}
+
+.animated-button span:nth-child(4) {
+    top: 0px;
+    left: 0px;
+    height: 100%;
+    width: 2px;
+    background: linear-gradient(to bottom, rgba(8, 20, 43, 0), #2662d9);
+    animation: 2s animateLeft linear -1s infinite;
+}
+
+@keyframes animateLeft {
+    0% {
+        transform: translateY(-100%);
+    }
+    100% {
+        transform: translateY(100%);
+    }
+}
