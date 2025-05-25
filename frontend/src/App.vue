@@ -87,7 +87,7 @@
           <ul class="carrinho-items-list">
             <li v-for="item in carrinho" :key="item.id" class="carrinho-item">
               <div class="item-info-carrinho">
-                <img :src="getImageUrl(item.imagem)" alt="Produto" class="item-imagem-carrinho" />
+                <img :src="item.imagem" alt="Produto" class="item-imagem-carrinho" />
                 <div class="item-details-carrinho">
                   <span class="item-nome-carrinho">{{ item.nome }}</span>
                   <span class="item-quantidade-carrinho">{{ item.quantidade }} x R$ {{ item.preco }}</span>

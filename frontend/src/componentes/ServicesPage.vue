@@ -1,17 +1,20 @@
 <template>
   <div class="cardapio-container">
-    <!-- Menu Lateral -->
     <div class="menu-lateral">
       <ul>
         <li v-for="(itens, categoria) in cardapioPorCategoria" :key="categoria">
-          <a :href="`#${categoria}`" @click.prevent="scrollToSection(categoria)" :class="{ active: isActive(categoria) }" class="gradient-text">
+          <a
+              :href="`#${categoria}`"
+              @click.prevent="scrollToSection(categoria)"
+              :class="{ active: isActive(categoria) }"
+              class="gradient-text"
+          >
             {{ categoria }}
           </a>
         </li>
       </ul>
     </div>
 
-    <!-- Conteúdo Principal -->
     <div class="cardapio-content">
       <section class="cards">
         <div
@@ -21,35 +24,64 @@
             class="categoria-container"
         >
           <h2 class="categoria-titulo">{{ categoria }}</h2>
-          <div class="card-container">
-            <div
-                class="card gradient-border"
-                v-for="(item, index) in itens"
-                :key="index"
-                :class="{ flipped: isFlipped(categoria, index) }"
-                @click="toggleFlip(categoria, index)"
+
+          <div v-if="swiperReady" class="swiper-instance-wrapper">
+            <div class="swiper-button-prev" :id="'swiper-button-prev-' + categoria"></div>
+            <div class="swiper-button-next" :id="'swiper-button-next-' + categoria"></div>
+
+            <swiper
+                :modules="swiperModules" :slides-per-view="3"
+                :space-between="20"
+                :navigation="{
+                  nextEl: '#swiper-button-next-' + categoria,
+                  prevEl: '#swiper-button-prev-' + categoria
+                }"
+                :breakpoints="{
+                      0: { slidesPerView: 2, spaceBetween: 10 },  // de 0 até <400px -> 2 cards
+                      400: { slidesPerView: 3, spaceBetween: 10 }, // >= 400px -> 1 card
+                       550: { slidesPerView: 2, spaceBetween: 10 },            // de 550 até 599
+                       600: { slidesPerView: 3, spaceBetween: 10 },
+                       800: { slidesPerView: 2, spaceBetween: 15 },            // de 800 até 899
+                       1000: { slidesPerView: 3, spaceBetween: 20 },           // de 1000 até 1199
+                       1200: { slidesPerView: 4, spaceBetween: 20 },
+                       1400: { slidesPerView: 5, spaceBetween: 20 },           // de 1400 até 1599
+                       1650: { slidesPerView: 6, spaceBetween: 20 }            // de 1650 até 1799
+                }"
+                :pagination="{ clickable: true }" class="card-carousel"
             >
-              <i class="plus-btn-details" @click.stop="toggleFlip(categoria, index)"></i>
-              <div class="card-inner">
-                <div class="card-front">
-                  <img :src="item.imagem" :alt="item.nome" class="service-image" />
-                  <!-- Nome e Preço -->
-                  <div class="card-content">
-                    <h3 class="item-nome">{{ item.nome }}</h3>
-                    <p class="item-preco">R$ {{ item.preco.toFixed(2) }}</p>
+              <swiper-slide
+                  v-for="(item, index) in itens"
+                  :key="index"
+              >
+                <div
+                    class="card gradient-border"
+                    :class="{ flipped: isFlipped(categoria, index) }"
+                    @click="toggleFlip(categoria, index)"
+                >
+                  <i class="plus-btn-details" @click.stop="toggleFlip(categoria, index)"></i>
+                  <div class="card-inner">
+                    <div class="card-front">
+                      <img :src="item.imagem" :alt="item.nome" class="service-image" />
+                      <div class="card-content">
+                        <h3 class="item-nome">{{ item.nome }}</h3>
+                        <p class="item-preco">R$ {{ item.preco.toFixed(2) }}</p>
+                      </div>
+                      <button
+                          class="animated-button raise fixed-button"
+                          @click.stop="adicionarAoCarrinho(item)"
+                      >
+                        <span></span><span></span><span></span><span></span>
+                        Adicionar ao Carrinho
+                      </button>
+                    </div>
+                    <div class="card-back">
+                      <h3>{{ item.nome }}</h3>
+                      <p>{{ item.descricao }}</p>
+                    </div>
                   </div>
-                  <!-- Botão Fixo -->
-                  <button class="animated-button raise fixed-button" @click.stop="adicionarAoCarrinho(item)">
-                    <span></span><span></span><span></span><span></span>
-                    Adicionar ao Carrinho
-                  </button>
                 </div>
-                <div class="card-back">
-                  <h3>{{ item.nome }}</h3>
-                  <p>{{ item.descricao }}</p>
-                </div>
-              </div>
-            </div>
+              </swiper-slide>
+            </swiper>
           </div>
         </div>
       </section>
@@ -61,23 +93,40 @@
 import axios from "axios";
 import { reactive } from 'vue';
 import '../assets/css/animated-buttons.css';
- // Importar o arquivo CSS dos botões animados
+
+// Import Swiper Vue.js components
+import { Swiper, SwiperSlide } from 'swiper/vue';
+// Import Swiper modules
+import { Navigation, Pagination } from 'swiper/modules'; // These were already imported
+
+// Import Swiper styles
+import 'swiper/css';
+import 'swiper/css/navigation';
+import 'swiper/css/pagination';
 
 export default {
   name: "CardapioPage",
+  components: {
+    Swiper,
+    SwiperSlide,
+  },
   data() {
     return {
-      cardapio: [], // Armazena todos os itens do cardápio
-      cardapioPorCategoria: {}, // Armazena os itens do cardápio agrupados por categoria
-      flippedCards: reactive({}) // Armazena o estado flipped dos cartões por categoria e índice
+      cardapio: [],
+      cardapioPorCategoria: {},
+      flippedCards: reactive({}),
+      activeCategory: null,
+      swiperReady: false,
+      // SOLUTION: Make the imported Swiper modules available to the template
+      swiperModules: [Navigation, Pagination],
     };
   },
   computed: {
     carrinho() {
-      return this.$store.state.carrinho;  // Acessa o carrinho do Vuex
+      return this.$store.state.carrinho;
     },
     carrinhoVazio() {
-      return this.carrinho.length === 0;  // Verifica se o carrinho está vazio
+      return this.carrinho.length === 0;
     }
   },
   methods: {
@@ -86,6 +135,8 @@ export default {
         const resposta = await axios.get(`${process.env.VUE_APP_API_URL}/cardapio`);
         this.cardapio = resposta.data;
         this.cardapioPorCategoria = this.agruparPorCategoria(this.cardapio);
+        await this.$nextTick(); // Ensures DOM is updated before Swiper initializes
+        this.swiperReady = true;
       } catch (error) {
         console.error("Erro ao carregar cardápio:", error);
       }
@@ -100,22 +151,26 @@ export default {
         }
 
         const itemExistente = this.$store.state.carrinho.find(i => i.produtoId === item._id);
-
         let quantidadeAtualizada;
 
         if (itemExistente) {
           quantidadeAtualizada = itemExistente.quantidade + 1;
-          this.$store.commit("atualizarQuantidade", {produtoId: item._id, quantidade: quantidadeAtualizada});
+          this.$store.commit("atualizarQuantidade", {
+            produtoId: item._id,
+            quantidade: quantidadeAtualizada
+          });
         } else {
           quantidadeAtualizada = 1;
           const itemComDetalhes = {
             ...item,
             quantidade: quantidadeAtualizada,
-            imagem: `${process.env.VUE_APP_SERVER_URL}/uploads/${item.imagem}`,
+            // Assuming item.imagem is just the filename, construct full URL if needed
+            imagem: item.imagem.startsWith('http') ? item.imagem : `${process.env.VUE_APP_SERVER_URL}/uploads/${item.imagem}`,
           };
           this.$store.commit("adicionarItem", itemComDetalhes);
         }
 
+        // Update backend
         await axios.post(
             `${process.env.VUE_APP_API_URL}/carrinho`,
             {
@@ -124,8 +179,9 @@ export default {
                   produtoId: item._id,
                   nome: item.nome,
                   preco: item.preco,
-                  imagem: `${process.env.VUE_APP_SERVER_URL}/uploads/${item.imagem}`,
-                  quantidade: quantidadeAtualizada,
+                  // Ensure correct image path for backend
+                  imagem: item.imagem.startsWith('http') ? item.imagem : `${process.env.VUE_APP_SERVER_URL}/uploads/${item.imagem}`,
+                  quantidade: quantidadeAtualizada, // Send the updated total quantity for this item
                 }
               ],
             },
@@ -137,9 +193,9 @@ export default {
         );
 
         console.log(`${item.nome} adicionado ao carrinho!`);
-        await this.$store.dispatch("carregarCarrinho");
+        await this.$store.dispatch("carregarCarrinho"); // Refresh cart from backend
       } catch (error) {
-        console.error("Erro ao adicionar ao carrinho:", error);
+        console.error("Erro ao adicionar ao carrinho:", error.response ? error.response.data : error);
         alert("Ocorreu um erro ao adicionar ao carrinho.");
       }
     },
@@ -150,24 +206,28 @@ export default {
         if (!agrupados[categoria]) {
           agrupados[categoria] = [];
         }
-        agrupados[categoria].push(item);
+        // Construct full image URL here if not already done
+        const itemComImagemCompleta = {
+          ...item,
+          imagem: item.imagem.startsWith('http') ? item.imagem : `${process.env.VUE_APP_SERVER_URL}/uploads/${item.imagem}`
+        };
+        agrupados[categoria].push(itemComImagemCompleta);
         return agrupados;
       }, {});
     },
 
     scrollToSection(categoria) {
       const section = document.getElementById(categoria);
-      const title = section.querySelector('h2.categoria-titulo');
-
+      const title = section?.querySelector('h2.categoria-titulo');
       if (title) {
-        const offset = 90.97;
-        const top = title.offsetTop - offset;
+        const offset = 90.97; // Adjust as needed for your fixed header or other elements
+        const elementPosition = title.getBoundingClientRect().top + window.pageYOffset;
+        const offsetPosition = elementPosition - offset;
 
         window.scrollTo({
-          top: top,
-          behavior: "smooth",
+          top: offsetPosition,
+          behavior: "smooth"
         });
-
         this.activeCategory = categoria;
       }
     },
@@ -178,30 +238,37 @@ export default {
 
     onScroll() {
       const categorias = Object.keys(this.cardapioPorCategoria);
+      let currentCategory = null;
       for (let i = categorias.length - 1; i >= 0; i--) {
         const categoria = categorias[i];
         const section = document.getElementById(categoria);
-        if (section && window.scrollY >= section.offsetTop - 150) {
-          this.activeCategory = categoria;
-          break;
+        if (section) {
+          const sectionTop = section.offsetTop;
+          // Adjust offset to match scrollToSection or general preference
+          if (window.scrollY >= sectionTop - 150) {
+            currentCategory = categoria;
+            break;
+          }
         }
       }
+      this.activeCategory = currentCategory;
     },
 
     toggleFlip(categoria, index) {
       const key = `${categoria}-${index}`;
+      // Create a new object for reactivity if you want to clear others
+      // If you want multiple cards to be flipped, this logic needs adjustment
       if (this.flippedCards[key]) {
-        delete this.flippedCards[key];
+        this.flippedCards = {}; // This will unflip all other cards
+        // delete this.flippedCards[key]; // Use this if you want to toggle individually without affecting others
       } else {
-        // Reseta todos os cartões virados antes de virar o novo
-        this.flippedCards = {};
+        this.flippedCards = {}; // Ensures only one card is flipped at a time
         this.flippedCards[key] = true;
       }
     },
 
     isFlipped(categoria, index) {
-      const key = `${categoria}-${index}`;
-      return !!this.flippedCards[key];
+      return !!this.flippedCards[`${categoria}-${index}`];
     }
   },
   mounted() {
@@ -213,6 +280,8 @@ export default {
   }
 };
 </script>
+
+
 
 <style scoped>
 @import url('https://fonts.googleapis.com/css?family=Raleway:200');
@@ -241,6 +310,8 @@ export default {
 /* Layout Geral */
 .cardapio-container {
   display: flex;
+  flex-direction: row;
+  width: 100%;
 }
 
 /* Menu Lateral */
@@ -330,6 +401,7 @@ export default {
   min-height: 100vh;
   overflow-x: hidden;
   margin-top: 52px;
+  max-width: 100%;
 }
 
 /* Categorias */
@@ -346,12 +418,6 @@ export default {
 }
 
 /* Cards */
-.card-container {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 20px;
-
-}
 
 .card {
   background-color: #fff;
@@ -496,8 +562,54 @@ export default {
   font-size: 16px;
   font-weight: bold;
 }
+.card-carousel {
+  padding: 10px 0;
+}
 
-@media (max-width: 768px) {
+
+.swiper-instance-wrapper {
+  position: relative; /* Necessário para posicionar os botões dentro */
+  padding: 0 20px; /* Espaçamento opcional para evitar que os botões encostem nas bordas */
+  width: 100%;
+  max-width: none;
+  box-sizing: border-box;
+}
+
+/* Estilo base dos botões */
+.swiper-button-prev,
+.swiper-button-next {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 10;
+  background-color: rgba(255, 255, 255, 0.8);
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  color: #333;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Posição dos botões */
+.swiper-button-prev {
+  left: -30px; /* ajuste conforme necessário */
+}
+
+.swiper-button-next {
+  right: -10px; /* ajuste conforme necessário */
+}
+.cards {
+  width: 100%;       /* Ocupa toda a largura disponível do pai */
+  max-width: 1500px; /* Ou ajuste para o tamanho que quiser */
+  margin: 0 auto;    /* Centraliza no contêiner */
+  box-sizing: border-box;
+}
+
+
+
+@media (max-width: 800px) {
   .cardapio-container {
     flex-direction: column;
   }
@@ -554,6 +666,12 @@ export default {
     box-sizing: border-box;
   }
 }
-
+.cards {
+  width: 100%;       /* Ocupa toda a largura disponível do pai */
+  max-width: 1500px; /* Ou ajuste para o tamanho que quiser */
+  margin: 0 auto;    /* Centraliza no contêiner */
+  box-sizing: border-box;
+}
 
 </style>
+
