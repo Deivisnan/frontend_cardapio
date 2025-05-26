@@ -24,8 +24,12 @@
             required
             class="input-field"
         />
-        <button type="button" class="toggle-password" @click="togglePasswordVisibility">
-          {{ isPasswordVisible ? 'Esconder' : 'Mostrar' }}
+        <button
+            type="button"
+            class="toggle-password"
+            @click="togglePasswordVisibility"
+        >
+          <i :class="isPasswordVisible ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
         </button>
       </div>
       <input
@@ -46,6 +50,7 @@
     </p>
   </div>
 </template>
+
 
 <script>
 import axios from "axios";
@@ -170,14 +175,17 @@ form {
 
 .toggle-password {
   position: absolute;
-  right: 10px;
+  top: 50%;
+  right: -10px;               /* sempre no canto direito */
+  transform: translateY(-50%);
   background: none;
   border: none;
   color: #623605;
   cursor: pointer;
   font-weight: bold;
+  font-size: 1.2rem;
+  z-index: 10;
 }
-
 .input-field:focus {
   outline: none;
   box-shadow: 0 0 5px rgba(98, 54, 5, 0.8); /* Destaque no foco */
@@ -224,4 +232,58 @@ form {
   font-size: 0.9rem;
   margin-top: 10px;
 }
+
+@media (max-width: 600px) {
+  .cadastro-container {
+    padding: 10px;
+  }
+
+  h1 {
+    font-size: 1.5rem;
+    text-align: center;
+  }
+
+  form {
+    padding: 15px;
+    width: 100%;
+  }
+
+  .input-field {
+    font-size: 0.95rem;
+    padding: 10px;
+  }
+
+  .submit-button {
+    font-size: 0.95rem;
+    padding: 10px;
+  }
+
+  .password-container .input-field {
+    padding-right: 40px; /* mantém espaço pro olho no mobile */
+  }
+
+
+  .toggle-password {
+    position: absolute;
+    top: 50%;
+    left: 150px;               /* sempre no canto direito */
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: #623605;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 1.2rem;
+    z-index: 10;
+  }
+
+  .login-prompt {
+    font-size: 0.9rem;
+    text-align: center;
+  }
+}
+
+
+
+
 </style>

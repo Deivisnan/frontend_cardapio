@@ -1,7 +1,7 @@
-<!--pagian de login-->
 <template>
   <div class="login-container">
     <div class="login-box">
+      <!-- seu conteúdo atual do login -->
       <h1>Login</h1>
       <form @submit.prevent="handleLogin">
         <input
@@ -21,9 +21,18 @@
         <button type="submit" class="login-button">Entrar</button>
       </form>
 
-      <!-- Botão para redirecionar para a página de cadastro -->
-      <p>Não tem uma conta? <router-link to="/cadastro" class="signup-link">Cadastre-se</router-link></p>
+      <p class="signup-text">
+        Não tem uma conta?
+        <router-link to="/cadastro" class="signup-link">Cadastre-se</router-link>
+      </p>
     </div>
+
+    <!-- Novo texto/link fora da login-box -->
+    <p class="admin-login-text">
+      <router-link to="/LoginAdm" class="admin-login-link">
+        Entre como Administrador
+      </router-link>
+    </p>
   </div>
 </template>
 
@@ -83,20 +92,23 @@ export default {
       }
     }
   }
-
-  };
+};
 </script>
+
 <style scoped>
 /* Container principal */
 .login-container {
   display: flex;
+  flex-direction: column; /* empilha verticalmente */
   justify-content: center;
   align-items: center;
   min-height: 100vh;
   background: linear-gradient(135deg, #120a00, #623605);
   font-family: 'Roboto', sans-serif;
   color: #fff;
+  padding: 20px; /* opcional para espaçamento nas laterais */
 }
+
 
 /* Caixa de login */
 .login-box {
@@ -160,14 +172,43 @@ export default {
   transform: scale(0.98);
 }
 
-/* Link do cadastro */
+/* Texto e link do cadastro */
+.signup-text {
+  margin-top: 20px;
+  margin-bottom: 15px;
+  font-size: 0.9rem;
+  color: #fff;
+}
+
 .signup-link {
   color: #2575fc;
   text-decoration: none;
   font-weight: bold;
+  margin-left: 4px;
 }
 
 .signup-link:hover {
+  text-decoration: underline;
+}
+
+.admin-login-text {
+  margin-top: 20px;
+  text-align: center;
+  font-size: 1rem;
+  color: #fff;
+  font-family: 'Roboto', sans-serif;
+}
+
+.admin-login-link {
+  color: #ffae00;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  transition: color 0.3s;
+}
+
+.admin-login-link:hover {
+  color: #ffcf40;
   text-decoration: underline;
 }
 
@@ -187,6 +228,10 @@ export default {
 
   .login-button {
     font-size: 0.9rem;
+  }
+
+  .signup-text {
+    font-size: 0.85rem;
   }
 }
 </style>
