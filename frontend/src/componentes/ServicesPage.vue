@@ -37,9 +37,9 @@
                   prevEl: '#swiper-button-prev-' + categoria
                 }"
                 :breakpoints="{
-                      0: { slidesPerView: 2, spaceBetween: 10 },  // de 0 até <400px -> 2 cards
-                      400: { slidesPerView: 3, spaceBetween: 10 }, // >= 400px -> 1 card
-                       550: { slidesPerView: 2, spaceBetween: 10 },            // de 550 até 599
+                      0: { slidesPerView: 1, spaceBetween: 10 },  // de 0 até <400px -> 2 cards
+                       300: { slidesPerView: 2, spaceBetween: 10 },  // de 0 até <400px -> 2 cards
+                       550: { slidesPerView: 3, spaceBetween: 10 },            // de 550 até 599
                        600: { slidesPerView: 3, spaceBetween: 10 },
                        800: { slidesPerView: 2, spaceBetween: 15 },            // de 800 até 899
                        1000: { slidesPerView: 3, spaceBetween: 20 },           // de 1000 até 1199
